@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-ink-950 text-cream font-body antialiased;
+    background-image:
+      radial-gradient(ellipse at 20% 0%, rgba(196, 96, 58, 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, rgba(114, 143, 111, 0.05) 0%, transparent 50%);
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-ink-900;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-ink-600 rounded-full;
+  }
+
+  ::selection {
+    @apply bg-terracotta-600 text-cream;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-ink-900/60 backdrop-blur-md border border-ink-700/50;
+  }
+
+  .glass-light {
+    @apply bg-ink-800/40 backdrop-blur-sm border border-ink-700/30;
+  }
+
+  .btn-primary {
+    @apply bg-terracotta-500 hover:bg-terracotta-400 text-cream font-body font-medium
+           px-5 py-2.5 rounded-lg transition-all duration-200
+           hover:shadow-lg hover:shadow-terracotta-600/20
+           active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent hover:bg-ink-800 text-dust hover:text-cream
+           px-4 py-2 rounded-lg transition-all duration-200 font-body;
+  }
+
+  .btn-outline {
+    @apply border border-ink-600 hover:border-ink-400 text-dust hover:text-cream
+           px-4 py-2 rounded-lg transition-all duration-200 font-body;
+  }
+
+  .tag {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-mono
+           bg-ink-800 text-dust border border-ink-700/50;
+  }
+
+  .tag-accent {
+    @apply tag bg-terracotta-600/20 text-terracotta-400 border-terracotta-600/30;
+  }
+
+  .tag-sage {
+    @apply tag bg-sage-500/20 text-sage-400 border-sage-500/30;
+  }
+
+  .input-base {
+    @apply bg-ink-900 border border-ink-700 rounded-lg px-4 py-2.5
+           text-cream placeholder:text-ink-500 font-body
+           focus:outline-none focus:border-terracotta-500/60 focus:ring-1 focus:ring-terracotta-500/30
+           transition-all duration-200;
+  }
+
+  .shimmer-bg {
+    background: linear-gradient(
+      90deg,
+      theme('colors.ink.800') 0%,
+      theme('colors.ink.700') 50%,
+      theme('colors.ink.800') 100%
+    );
+    background-size: 200% 100%;
+    @apply animate-shimmer;
+  }
+}

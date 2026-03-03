@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+silhouette-backend/.env
+silhouette-backend/image_store/
+silhouette-backend/data/chroma/
+silhouette-backend/data/outfits.json
+silhouette-backend/.venv/
+silhouette-backend/venv/
+
+# Node
+silhouette-frontend/node_modules/
+silhouette-frontend/dist/
+silhouette-frontend/.env
+silhouette-frontend/.env.local
