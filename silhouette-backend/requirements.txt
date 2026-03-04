@@ -36,6 +36,10 @@ ollama>=0.2.0
 # Groq
 groq>=0.4.2
 
+# Background removal
+rembg==2.0.57
+onnxruntime>=1.16.0
+
 # Utils
 python-dotenv==1.0.1
 aiofiles==23.2.1

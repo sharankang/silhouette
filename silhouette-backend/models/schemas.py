@@ -6,12 +6,13 @@ import uuid
 
 # Clothing Item
 class ClothingTags(BaseModel):
-    name:      str       = ""
-    category:  str       = ""
-    season:    str       = "all-season"
-    occasions: list[str] = []
-    styles:    list[str] = []
-    colors:    list[str] = []
+    name:        str       = ""
+    category:    str       = ""
+    season:      str       = "all-season"
+    occasions:   list[str] = []
+    styles:      list[str] = []
+    colors:      list[str] = []
+    description: str       = ""
 
 
 class ClothingItem(BaseModel):
@@ -24,6 +25,7 @@ class ClothingItem(BaseModel):
     occasions:    list[str] = []
     styles:       list[str] = []
     colors:       list[str] = []
+    description:  str       = ""
     active:       bool      = True
     date_added:   str       = Field(default_factory=lambda: datetime.utcnow().isoformat())
     last_updated: str       = Field(default_factory=lambda: datetime.utcnow().isoformat())

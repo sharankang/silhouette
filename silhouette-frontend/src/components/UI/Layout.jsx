@@ -1,11 +1,12 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom'
-import { Shirt, MessageSquare, Sparkles, BookOpen } from 'lucide-react'
+import { Shirt, MessageSquare, Sparkles, Shuffle } from 'lucide-react'
 import clsx from 'clsx'
 
 const navItems = [
-  { to: '/wardrobe', icon: Shirt,         label: 'Closet'  },
-  { to: '/chat',     icon: MessageSquare, label: 'Style Chat' },
-  { to: '/outfits',  icon: Sparkles,      label: 'Outfits'   },
+  { to: '/wardrobe', icon: Shirt,         label: 'Closet'      },
+  { to: '/chat',     icon: MessageSquare, label: 'Style Chat'  },
+  { to: '/mix',      icon: Shuffle,       label: 'Mix & Match' },
+  { to: '/outfits',  icon: Sparkles,      label: 'Outfits'     },
 ]
 
 export default function Layout() {
@@ -13,9 +14,9 @@ export default function Layout() {
 
   return (
     <div className="flex min-h-screen">
-      {/* Sidebar */}
+      {}
       <aside className="w-56 shrink-0 flex flex-col glass border-r border-ink-800/60 sticky top-0 h-screen">
-        {/* Logo */}
+        {}
         <div className="px-6 pt-8 pb-6 border-b border-ink-800/60">
           <h1 className="font-display text-xl text-cream leading-tight">
             Silhou
@@ -26,7 +27,7 @@ export default function Layout() {
           </p>
         </div>
 
-        {/* Nav */}
+        {}
         <nav className="flex-1 px-3 py-6 space-y-1">
           {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink
@@ -47,7 +48,7 @@ export default function Layout() {
           ))}
         </nav>
 
-        {/* Bottom hint */}
+        {}
         <div className="px-6 pb-6">
           <div className="p-3 rounded-lg bg-ink-900/60 border border-ink-800/50">
             <p className="text-ink-400 text-xs font-mono leading-relaxed">
@@ -58,7 +59,7 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* Main */}
+      {}
       <main className="flex-1 overflow-y-auto">
         <Outlet />
       </main>

@@ -11,7 +11,7 @@ client.interceptors.response.use(
 )
 
 const api = {
-  /* Wardrobe */
+  
   getWardrobe: (filters = {}) =>
     client.get('/wardrobe', { params: filters }),
 
@@ -31,15 +31,18 @@ const api = {
   deleteClothingItem: (id) =>
     client.delete(`/wardrobe/${id}`),
 
-  /* Chat */
+  
   sendMessage: (formData) =>
     client.post('/chat', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     }),
 
-  /* Outfits */
+  
   getOutfits: () =>
     client.get('/outfits'),
+
+  saveManualOutfit: (items) =>
+    client.post('/outfits/manual', { items }),
 
   rateOutfit: (id, rating) =>
     client.patch(`/outfits/${id}/rate`, { rating }),

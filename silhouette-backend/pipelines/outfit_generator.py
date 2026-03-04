@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 class OutfitState(TypedDict):
     user_text:          str
+    original_user_text: str   # clean original — used for saving, not enriched with context
     audio_tone:         str
     audio_bias:         dict
     inspo_image_pil:    Optional[object]
@@ -37,8 +38,27 @@ class OutfitState(TypedDict):
     error:              Optional[str]
 
 
+CULTURAL_AESTHETIC_MAP = {
+    "desi":          "indo-western fusion, ethnic prints, kurta, salwar, anarkali, dupatta, vibrant colors",
+    "indian":        "indo-western fusion, ethnic prints, kurta, salwar, anarkali, dupatta, embroidery",
+    "boho":          "bohemian, flowy fabrics, earthy tones, floral prints, layered, free-spirited",
+    "y2k":           "Y2K aesthetic, low-rise, baby tees, cargo pants, metallics, early 2000s",
+    "cottagecore":   "cottagecore, floral prints, linen, prairie dress, pastoral, soft feminine",
+    "dark academia": "dark academia, plaid, blazers, turtlenecks, moody earth tones, structured",
+    "old money":     "quiet luxury, understated quality, neutral palette, cashmere, tailored",
+    "streetwear":    "streetwear, oversized, graphic tees, sneakers, athletic influence, urban",
+    "preppy":        "preppy, polo shirts, chinos, loafers, clean cut, classic American",
+}
+
+def _enrich_cultural_aesthetics(text: str) -> str:
+    lower = text.lower()
+    for keyword, expansion in CULTURAL_AESTHETIC_MAP.items():
+        if keyword in lower:
+            return f"{text} (style context: {expansion})"
+    return text
+
 def parse_intent(state: OutfitState) -> OutfitState:
-    user_text  = state["user_text"] or ""
+    user_text  = _enrich_cultural_aesthetics(state["user_text"] or "")
     audio_bias = state.get("audio_bias", {})
 
     prompt = f"""Extract outfit intent from this request. Return ONLY valid JSON.
@@ -158,38 +178,53 @@ def build_outfit(state: OutfitState) -> OutfitState:
 
     candidates = list(state["candidate_items"])
 
-    # keep top 3 by relevance, shuffle the rest so repeat requests vary
+
     if len(candidates) > 4:
         random.shuffle(candidates[3:])
 
-    # use indices instead of UUIDs — small models hallucinate long IDs
-    items_text = "\n".join([
-        f"[{i}] {item.category} | {item.name or 'untitled'} | colors:{','.join(item.colors) or 'unknown'} | season:{item.season}"
-        for i, item in enumerate(candidates)
-    ])
+    # use indices instead of UUIDs
+    def item_desc(idx, item) -> str:
+        parts = [
+            f"[{idx}]",
+            item.category,
+            item.name if item.name and item.name.lower() not in ("", "untitled") else "(no name)",
+            f"colors:{','.join(item.colors) or 'unknown'}",
+            f"season:{item.season}",
+        ]
+        if getattr(item, 'styles', []):
+            parts.append(f"style:{','.join(item.styles)}")
+        if getattr(item, 'occasions', []):
+            parts.append(f"occasions:{','.join(item.occasions)}")
+        return " | ".join(parts)
+
+    items_text = "\n".join([item_desc(i, item) for i, item in enumerate(candidates)])
 
     rules_text = "\n".join(f"• {r}" for r in state["fashion_rules"][:4]) if state["fashion_rules"] else ""
 
-    prompt = f"""You are a personal stylist. Select a COMPLETE, COHERENT outfit from this wardrobe.
+    prompt = f"""You are a personal stylist. Select a COMPLETE outfit from this wardrobe.
 
 USER REQUEST: "{state['user_text']}"
 OCCASION: {state['occasion']}
 MOOD/VIBE: {state['mood']}
 
-AVAILABLE ITEMS (pick by index number):
+AVAILABLE ITEMS (select by index number only):
 {items_text}
 
-CRITICAL OUTFIT RULES:
-- Pick items that actually work TOGETHER visually and stylistically
-- NEVER mix a mini dress with joggers — pick one silhouette and commit to it
-- Cozy/lazy/loungewear = soft fabrics, comfort-first. Avoid formal shoes or structured pieces
-- Casual = relaxed tops + jeans/casual bottoms + clean sneakers or flat shoes
-- Formal = structured pieces, heels or smart shoes
-- If picking a DRESS, do NOT also pick bottoms — a dress is a complete outfit on its own
-- Shoes should match the formality of the rest of the outfit
-- Aim for 2-4 items max (top + bottom + shoes, OR dress + shoes, OR dress + outerwear + shoes)
+STYLE GUIDELINES:
+{rules_text if rules_text else "Apply general fashion principles."}
 
-Reply with ONLY a JSON object, nothing else before or after:
+MANDATORY SELECTION RULES — you MUST follow all of these:
+1. You MUST select items from the actual list above ONLY. Never reference items not in this list.
+2. You MUST select at least 2-3 items covering these categories:
+   - EITHER: one top/outerwear AND one bottom AND optionally shoes
+   - OR: one dress AND optionally shoes and/or outerwear
+3. NEVER select only one item. A single top or single dress alone is NOT a complete outfit.
+4. NEVER select two items from the same category.
+5. If no shoes are available, skip shoes — do not hallucinate them.
+6. Shoes should match the formality of the rest of the outfit.
+7. If picking a dress, do NOT also pick bottoms.
+
+Reply with ONLY a JSON object, nothing else:
 {{"indices": [0, 2, 4], "reason": "one line explaining why these work together"}}"""
 
     try:
@@ -221,6 +256,14 @@ Reply with ONLY a JSON object, nothing else before or after:
 
 
 def validate_outfit(state: OutfitState) -> OutfitState:
+    # one item per category
+    seen_cats, deduped = set(), []
+    for item in state["selected_items"]:
+        if item.category not in seen_cats:
+            deduped.append(item)
+            seen_cats.add(item.category)
+    state["selected_items"] = deduped
+
     categories = {item.category for item in state["selected_items"]}
     missing    = []
 
@@ -228,6 +271,10 @@ def validate_outfit(state: OutfitState) -> OutfitState:
         missing.append("tops")
     if "dresses" not in categories and "bottoms" not in categories:
         missing.append("bottoms")
+
+    # a dress is a complete outfit 
+    if "dresses" in categories and "bottoms" in categories:
+        state["selected_items"] = [i for i in state["selected_items"] if i.category != "bottoms"]
 
     return {**state, "missing_categories": missing}
 
@@ -254,8 +301,12 @@ def generate_explanation(state: OutfitState) -> OutfitState:
         color_str = " and ".join(item.colors[:2]) if item.colors else ""
         return f"{color_str} {item.category}".strip()
 
+    def color_str(item) -> str:
+        known = [c for c in item.colors if c and c.lower() != "unknown"]
+        return f"colors: {', '.join(known)}" if known else ""
+
     items_list = "\n".join(
-        f"- {describe_item(item)} (colors: {', '.join(item.colors) or 'unknown'}, category: {item.category})"
+        f"- {describe_item(item)}{(' (' + color_str(item) + ')') if color_str(item) else ''} ({item.category})"
         for item in state["selected_items"]
     )
 
@@ -274,7 +325,7 @@ STRICT RULES:
 - Explain why these specific pieces work together and suit the user's request.
 - Be warm and direct. No generic filler phrases.
 """
-    return {**state, "explanation": call_fast(prompt)}
+    return {**state, "explanation": call_smart(prompt)}
 
 
 def save_outfit(state: OutfitState) -> OutfitState:
@@ -282,7 +333,7 @@ def save_outfit(state: OutfitState) -> OutfitState:
         id=str(uuid.uuid4()),
         items=state["selected_items"],
         explanation=state["explanation"],
-        query_text=state["user_text"],
+        query_text=state.get("original_user_text") or state["user_text"],
         created_at=datetime.utcnow().isoformat(),
     )
     return {**state, "outfit_result": outfit}
@@ -342,15 +393,28 @@ def get_outfit_graph():
 
 
 async def generate_outfit(
-    user_text:       str,
-    audio_tone:      str    = "neu",
-    audio_bias:      dict   = None,
-    inspo_image_pil: object = None,
+    user_text:            str,
+    audio_tone:           str    = "neu",
+    audio_bias:           dict   = None,
+    inspo_image_pil:      object = None,
+    conversation_history: list   = None,
 ) -> OutfitResult:
     graph = get_outfit_graph()
 
+    enriched_text = user_text
+    if conversation_history:
+        context_lines = []
+        for msg in conversation_history[-4:]:
+            role = msg.get('role', '')
+            text = msg.get('text', '') or ''
+            if role == 'user' and text:
+                context_lines.append(f'User previously said: "{text}"')
+        if context_lines:
+            enriched_text = '\n'.join(context_lines) + f'\nCurrent request: "{user_text}"'
+
     initial_state = OutfitState(
-        user_text=user_text,
+        user_text=enriched_text,
+        original_user_text=user_text, 
         audio_tone=audio_tone,
         audio_bias=audio_bias or {},
         inspo_image_pil=inspo_image_pil,

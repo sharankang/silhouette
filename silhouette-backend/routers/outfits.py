@@ -1,10 +1,12 @@
 from fastapi import APIRouter, HTTPException
 from pathlib import Path
 from datetime import datetime
+from typing import List
 import json
+import uuid
 import logging
 
-from models.schemas import OutfitResult, OutfitListResponse, RateOutfitRequest, ChatResponse
+from models.schemas import OutfitResult, OutfitItem, OutfitListResponse, RateOutfitRequest, ChatResponse
 from pipelines.outfit_generator import generate_outfit
 
 router = APIRouter(prefix="/outfits", tags=["outfits"])
@@ -12,9 +14,6 @@ logger = logging.getLogger(__name__)
 
 OUTFITS_FILE = Path("./data/outfits.json")
 OUTFITS_FILE.parent.mkdir(parents=True, exist_ok=True)
-
-
-# File-based outfit store
 
 def _load_outfits() -> list[dict]:
     if not OUTFITS_FILE.exists():
@@ -24,28 +23,43 @@ def _load_outfits() -> list[dict]:
     except Exception:
         return []
 
-
 def _save_outfits(outfits: list[dict]) -> None:
     OUTFITS_FILE.write_text(json.dumps(outfits, indent=2))
 
-
 def save_outfit(outfit: OutfitResult) -> None:
+    
     outfits = _load_outfits()
-    outfits.insert(0, outfit.model_dump())  # newest first
+    outfits.insert(0, outfit.model_dump()) 
     _save_outfits(outfits)
 
+@router.post("/manual", response_model=OutfitResult)
+async def save_manual_outfit(body: dict):
+    items_data = body.get("items", [])
+    if len(items_data) < 2:
+        raise HTTPException(400, "Select at least 2 items to save an outfit.")
 
-# Routes
+    items = [OutfitItem(**i) for i in items_data]
+    outfit = OutfitResult(
+        id=str(uuid.uuid4()),
+        items=items,
+        explanation="Manually styled look.",
+        query_text="manual",
+        created_at=datetime.utcnow().isoformat(),
+    )
+    save_outfit(outfit)
+    return outfit
+
 
 @router.get("", response_model=OutfitListResponse)
 async def get_outfits():
+    
     outfits_data = _load_outfits()
     outfits = [OutfitResult(**o) for o in outfits_data]
     return OutfitListResponse(outfits=outfits, total=len(outfits))
 
-
 @router.patch("/{outfit_id}/rate")
 async def rate_outfit(outfit_id: str, body: RateOutfitRequest):
+    
     outfits = _load_outfits()
     updated = False
 
@@ -63,9 +77,9 @@ async def rate_outfit(outfit_id: str, body: RateOutfitRequest):
     logger.info(f"Rated outfit {outfit_id}: {body.rating}/5")
     return {"id": outfit_id, "rating": body.rating}
 
-
 @router.delete("/{outfit_id}")
 async def delete_outfit(outfit_id: str):
+    
     outfits = _load_outfits()
     filtered = [o for o in outfits if o["id"] != outfit_id]
 
@@ -75,9 +89,9 @@ async def delete_outfit(outfit_id: str):
     _save_outfits(filtered)
     return {"deleted": outfit_id}
 
-
 @router.post("/{outfit_id}/regenerate", response_model=ChatResponse)
 async def regenerate_outfit(outfit_id: str):
+    
     outfits = _load_outfits()
     original = next((o for o in outfits if o["id"] == outfit_id), None)
 
@@ -91,7 +105,6 @@ async def regenerate_outfit(outfit_id: str):
     if outfit is None:
         raise HTTPException(500, "Could not regenerate outfit.")
 
-    # Save the new outfit
     save_outfit(outfit)
 
     return ChatResponse(message=outfit.explanation, outfit=outfit)

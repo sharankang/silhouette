@@ -23,6 +23,16 @@ export default function ChatPage() {
   const bottomRef = useRef(null)
 
   useEffect(() => {
+    const toSave = messages.filter(m => !m.loading)
+    try { localStorage.setItem('silhouette_chat', JSON.stringify(toSave)) } catch {}
+  }, [messages])
+
+  const clearChat = () => {
+    setMessages([])
+    localStorage.removeItem('silhouette_chat')
+  }
+
+  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
@@ -47,6 +57,14 @@ export default function ChatPage() {
       if (audio) formData.append('audio', audio, 'recording.webm')
       if (image) formData.append('image', image)
 
+      const recentHistory = messages
+        .filter(m => !m.loading && (m.role === 'user' || m.role === 'assistant') && m.text)
+        .slice(-6)
+        .map(m => ({ role: m.role, text: m.text }))
+      if (recentHistory.length > 0) {
+        formData.append('history', JSON.stringify(recentHistory))
+      }
+
       const response = await api.sendMessage(formData)
 
       setMessages(prev => prev.map(m =>
@@ -55,7 +73,6 @@ export default function ChatPage() {
           : m
       ))
     } catch (err) {
-      // Graceful error state
       setMessages(prev => prev.map(m =>
         m.id === loadingMsg.id
           ? { ...m, loading: false, text: "Request timed out — Ollama can be slow on the first few runs. Try again and it should be faster now that the model is warmed up." }
@@ -79,7 +96,6 @@ export default function ChatPage() {
           : m
       ))
     } catch {
-      // Optimistic update even if backend fails during dev
       setMessages(prev => prev.map(m =>
         m.outfit?.id === outfitId
           ? { ...m, outfit: { ...m.outfit, rating } }
@@ -92,14 +108,24 @@ export default function ChatPage() {
     <div className="flex flex-col h-screen">
       {/* Header */}
       <div className="px-8 pt-8 pb-4 border-b border-ink-800/60 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-terracotta-600/20 border border-terracotta-500/30 flex items-center justify-center">
-            <Sparkles size={16} className="text-terracotta-400" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-terracotta-600/20 border border-terracotta-500/30 flex items-center justify-center">
+              <Sparkles size={16} className="text-terracotta-400" />
+            </div>
+            <div>
+              <h2 className="font-display text-xl text-cream">Style Chat</h2>
+              <p className="text-ink-400 text-xs font-mono">Multimodal · Text, voice, and inspiration images</p>
+            </div>
           </div>
-          <div>
-            <h2 className="font-display text-xl text-cream">Style Chat</h2>
-            <p className="text-ink-400 text-xs font-mono">Multimodal · Text, voice, and inspiration images</p>
-          </div>
+          {messages.length > 0 && (
+            <button
+              onClick={clearChat}
+              className="text-xs text-ink-500 hover:text-terracotta-400 transition-colors px-3 py-1.5 rounded-lg border border-ink-800 hover:border-terracotta-500/30"
+            >
+              Clear chat
+            </button>
+          )}
         </div>
       </div>
 

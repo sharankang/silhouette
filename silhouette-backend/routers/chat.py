@@ -1,7 +1,8 @@
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
-from typing import Optional
+from typing import Optional, List
 from PIL import Image
 import io
+import json
 import logging
 
 from models.schemas import ChatResponse
@@ -53,17 +54,13 @@ def is_fashion_related(text: str) -> bool:
 
 
 # Chat endpoint
-
 @router.post("", response_model=ChatResponse)
 async def chat(
-    text:  Optional[str]        = Form(None),
-    audio: Optional[UploadFile] = File(None),
-    image: Optional[UploadFile] = File(None),
+    text:    Optional[str]        = Form(None),
+    audio:   Optional[UploadFile] = File(None),
+    image:   Optional[UploadFile] = File(None),
+    history: Optional[str]        = Form(None),
 ):
-    """
-    Multimodal chat endpoint.
-    Processes text + audio + image inputs, runs outfit generation pipeline.
-    """
     # Step 1: Process audio if present
     audio_tone = "neu"
     audio_bias = {}
@@ -74,7 +71,6 @@ async def chat(
         if len(audio_bytes) > 100:  # ignore empty recordings
             try:
                 audio_result = await transcribe_audio(audio_bytes)
-                # Merge transcribed text with any typed text
                 if audio_result["text"]:
                     if final_text:
                         final_text = f"{final_text}. {audio_result['text']}"
@@ -107,7 +103,7 @@ async def chat(
             outfit=None,
         )
 
-    # Off-topic check (for text-heavy queries)
+    # Off-topic check
     if final_text and len(final_text.split()) > 5 and not is_fashion_related(final_text):
         return ChatResponse(
             message="I'm only able to help with styling and outfit recommendations! Tell me what you're in the mood to wear and I'll build something from your closet.",
@@ -120,11 +116,19 @@ async def chat(
 
     # Step 5: Run outfit generation pipeline
     try:
+        conversation_history = []
+        if history:
+            try:
+                conversation_history = json.loads(history)[-6:]
+            except Exception:
+                pass
+
         outfit = await generate_outfit(
             user_text=final_text,
             audio_tone=audio_tone,
             audio_bias=audio_bias,
             inspo_image_pil=inspo_image_pil,
+            conversation_history=conversation_history,
         )
 
         if outfit is None or not outfit.items:

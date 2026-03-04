@@ -163,6 +163,7 @@ def _item_to_document(item: ClothingItem) -> str:
         " ".join(item.occasions),
         " ".join(item.styles),
         " ".join(item.colors),
+        item.description,
     ]
     return " ".join(p for p in parts if p).lower()
 
@@ -175,6 +176,7 @@ def _item_to_metadata(item: ClothingItem) -> dict:
         "occasions":    " ".join(item.occasions),
         "styles":       " ".join(item.styles),
         "colors":       " ".join(item.colors),
+        "description":  item.description,
         "image_url":    item.image_url,
         "image_path":   item.image_path,
         "active":       "true" if item.active else "false",
@@ -192,6 +194,7 @@ def _metadata_to_item(meta: dict, item_id: str) -> ClothingItem:
         occasions=meta.get("occasions", "").split() if meta.get("occasions") else [],
         styles=meta.get("styles", "").split() if meta.get("styles") else [],
         colors=meta.get("colors", "").split() if meta.get("colors") else [],
+        description=meta.get("description", ""),
         image_url=meta.get("image_url", ""),
         image_path=meta.get("image_path", ""),
         active=meta.get("active", "true") == "true",
