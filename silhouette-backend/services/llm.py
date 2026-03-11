@@ -17,8 +17,6 @@ def _get_groq():
     return _groq_client
 
 
-# Public callers
-
 def call_groq(prompt: str, system: str = None, max_tokens: int = 512) -> str:
 
     client = _get_groq()
@@ -65,8 +63,20 @@ def call_fast(prompt: str, system: str = None) -> str:
 
 
 def call_smart(prompt: str, system: str = None) -> str:
-    try:
-        return call_ollama(prompt, system)
-    except Exception as e:
-        logger.warning(f"Ollama failed: {e}. Falling back to Groq.")
-        return call_groq(prompt, system, max_tokens=1024)
+    if _groq_available():
+        try:
+            client = _get_groq()
+            messages = []
+            if system:
+                messages.append({"role": "system", "content": system})
+            messages.append({"role": "user", "content": prompt})
+            response = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=messages,
+                max_tokens=1024,
+                temperature=0.3,
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            logger.warning(f"Groq 70b failed: {e}. Falling back to Ollama.")
+    return call_ollama(prompt, system)

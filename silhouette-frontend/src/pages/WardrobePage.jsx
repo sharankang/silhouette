@@ -10,7 +10,7 @@ import clsx from 'clsx'
 const FILTER_OPTS = {
   category: ['all', 'tops', 'bottoms', 'dresses', 'outerwear', 'shoes', 'accessories', 'jewellery'],
   season:   ['all', 'spring', 'summer', 'autumn', 'winter', 'all-season'],
-  occasion: ['all', 'casual', 'formal', 'work', 'party', 'sport', 'loungewear'],
+  occasion: ['all', 'casual', 'formal', 'work', 'party', 'ethnic', 'lounge', 'outdoor', 'date'],
 }
 
 

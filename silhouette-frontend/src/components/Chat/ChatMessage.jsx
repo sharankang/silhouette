@@ -40,8 +40,8 @@ export default function ChatMessage({ message, onRateOutfit }) {
           </div>
         )}
 
-        {/* Text bubble */}
-        {message.text && (
+        {/* Text bubble — hide if outfit card will show the explanation */}
+        {message.text && !(message.outfit) && (
           <div className={clsx(
             'rounded-2xl px-4 py-3 text-sm font-body leading-relaxed',
             isUser

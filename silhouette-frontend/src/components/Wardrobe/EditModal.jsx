@@ -6,8 +6,8 @@ import api from '../../services/api'
 
 const CATEGORIES = ['tops', 'bottoms', 'dresses', 'outerwear', 'shoes', 'accessories', 'jewellery']
 const SEASONS    = ['spring', 'summer', 'autumn', 'winter', 'all-season']
-const OCCASIONS  = ['casual', 'formal', 'work', 'party', 'sport', 'loungewear']
-const STYLE_TAGS = ['minimalist', 'streetwear', 'bohemian', 'preppy', 'edgy', 'romantic', 'classic', 'sporty']
+const OCCASIONS  = ['casual', 'formal', 'work', 'party', 'ethnic', 'lounge', 'outdoor', 'date']
+const STYLE_TAGS = ['minimalist', 'streetwear', 'bohemian', 'preppy', 'edgy', 'romantic', 'classic', 'sporty', 'ethnic', 'quiet-luxury', 'smart-casual', 'cottagecore']
 
 export default function EditModal({ open, onClose, item, onSuccess }) {
   const [tags, setTags] = useState({ category: '', season: '', occasions: [], styles: [], colors: [], name: '' })
@@ -49,7 +49,7 @@ export default function EditModal({ open, onClose, item, onSuccess }) {
   return (
     <Modal open={open} onClose={onClose} title="Edit item" wide>
       <div className="space-y-5">
-        {/* Image preview + name */}
+        {}
         <div className="flex gap-4 items-start">
           {item?.image_url && (
             <img src={item.image_url} alt="" className="w-20 h-24 object-cover rounded-lg border border-ink-700" />
@@ -65,19 +65,19 @@ export default function EditModal({ open, onClose, item, onSuccess }) {
           </div>
         </div>
 
-        {/* Category */}
+        {}
         <ChipGroup label="Category" options={CATEGORIES} value={tags.category}
           onChange={v => setTags(p => ({ ...p, category: v }))} single />
 
-        {/* Season */}
+        {}
         <ChipGroup label="Season" options={SEASONS} value={tags.season}
           onChange={v => setTags(p => ({ ...p, season: v }))} single />
 
-        {/* Occasion */}
+        {}
         <ChipGroup label="Occasion" options={OCCASIONS} value={tags.occasions}
           onChange={v => toggleMulti('occasions', v)} />
 
-        {/* Style */}
+        {}
         <ChipGroup label="Style" options={STYLE_TAGS} value={tags.styles}
           onChange={v => toggleMulti('styles', v)} />
 

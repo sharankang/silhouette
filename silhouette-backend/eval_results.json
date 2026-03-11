@@ -1,0 +1,1108 @@
+{
+  "wardrobe_size": 86,
+  "k": 10,
+  "mean_precision": 0.925,
+  "mean_recall": 0.2797,
+  "mrr": 0.9375,
+  "per_query": [
+    {
+      "query": "something casual and comfortable for a lazy day at home",
+      "precision": 0.7,
+      "recall": 0.1273,
+      "mrr": 0.5,
+      "retrieved": [
+        {
+          "name": "brown suede sneakers",
+          "category": "shoes",
+          "occasions": [
+            "casual",
+            "outdoor",
+            "lounge"
+          ],
+          "styles": [
+            "sporty",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "blue denim short skirt",
+          "category": "bottoms",
+          "occasions": [
+            "casual",
+            "outdoor",
+            "date"
+          ],
+          "styles": [
+            "classic",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "burgundy striped top",
+          "category": "tops",
+          "occasions": [
+            "casual",
+            "lounge"
+          ],
+          "styles": [
+            "classic",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "beige leather sandals",
+          "category": "shoes",
+          "occasions": [
+            "casual",
+            "outdoor",
+            "lounge"
+          ],
+          "styles": [
+            "minimalist",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "multicolor cropped bell-sleeve top",
+          "category": "tops",
+          "occasions": [
+            "casual",
+            "ethnic",
+            "party"
+          ],
+          "styles": [
+            "bohemian",
+            "ethnic"
+          ]
+        },
+        {
+          "name": "black cable knit sweater",
+          "category": "tops",
+          "occasions": [
+            "casual",
+            "lounge",
+            "date"
+          ],
+          "styles": [
+            "classic",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "cream Batman hoodie",
+          "category": "tops",
+          "occasions": [
+            "casual",
+            "lounge"
+          ],
+          "styles": [
+            "streetwear",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "pink graphic t-shirt",
+          "category": "tops",
+          "occasions": [
+            "casual",
+            "lounge",
+            "outdoor"
+          ],
+          "styles": [
+            "streetwear",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "colorful leather sandals",
+          "category": "shoes",
+          "occasions": [
+            "casual",
+            "ethnic",
+            "outdoor"
+          ],
+          "styles": [
+            "ethnic",
+            "bohemian"
+          ]
+        },
+        {
+          "name": "pink Italia t-shirt",
+          "category": "tops",
+          "occasions": [
+            "casual",
+            "lounge",
+            "outdoor"
+          ],
+          "styles": [
+            "sporty",
+            "streetwear"
+          ]
+        }
+      ]
+    },
+    {
+      "query": "smart casual work look",
+      "precision": 1.0,
+      "recall": 0.122,
+      "mrr": 1.0,
+      "retrieved": [
+        {
+          "name": "black wide-leg trousers",
+          "category": "bottoms",
+          "occasions": [
+            "work",
+            "casual",
+            "formal"
+          ],
+          "styles": [
+            "classic",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "beige wool pea coat",
+          "category": "outerwear",
+          "occasions": [
+            "casual",
+            "work",
+            "formal"
+          ],
+          "styles": [
+            "classic",
+            "quiet-luxury"
+          ]
+        },
+        {
+          "name": "brown leather heeled shoes",
+          "category": "shoes",
+          "occasions": [
+            "work",
+            "formal",
+            "casual"
+          ],
+          "styles": [
+            "classic",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "brown slim-fit trousers",
+          "category": "bottoms",
+          "occasions": [
+            "work",
+            "casual",
+            "formal"
+          ],
+          "styles": [
+            "classic",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "black tailored coat dress",
+          "category": "dresses",
+          "occasions": [
+            "work",
+            "formal",
+            "date"
+          ],
+          "styles": [
+            "classic",
+            "preppy"
+          ]
+        },
+        {
+          "name": "burgundy velvet loafers",
+          "category": "shoes",
+          "occasions": [
+            "casual",
+            "work",
+            "date"
+          ],
+          "styles": [
+            "classic",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "grey grid pattern blouse",
+          "category": "tops",
+          "occasions": [
+            "casual",
+            "work",
+            "lounge"
+          ],
+          "styles": [
+            "classic",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "brown leather pleated skirt",
+          "category": "bottoms",
+          "occasions": [
+            "casual",
+            "date",
+            "party"
+          ],
+          "styles": [
+            "edgy",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "light blue long-sleeved top",
+          "category": "tops",
+          "occasions": [
+            "casual",
+            "work",
+            "lounge"
+          ],
+          "styles": [
+            "classic",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "light gray slim-fit trousers",
+          "category": "bottoms",
+          "occasions": [
+            "casual",
+            "work",
+            "lounge"
+          ],
+          "styles": [
+            "classic",
+            "smart-casual"
+          ]
+        }
+      ]
+    },
+    {
+      "query": "ethnic festive outfit",
+      "precision": 1.0,
+      "recall": 0.303,
+      "mrr": 1.0,
+      "retrieved": [
+        {
+          "name": "multicolor cropped bell-sleeve top",
+          "category": "tops",
+          "occasions": [
+            "casual",
+            "ethnic",
+            "party"
+          ],
+          "styles": [
+            "bohemian",
+            "ethnic"
+          ]
+        },
+        {
+          "name": "colorful leather sandals",
+          "category": "shoes",
+          "occasions": [
+            "casual",
+            "ethnic",
+            "outdoor"
+          ],
+          "styles": [
+            "ethnic",
+            "bohemian"
+          ]
+        },
+        {
+          "name": "black embroidered tunic top",
+          "category": "tops",
+          "occasions": [
+            "ethnic",
+            "casual",
+            "lounge"
+          ],
+          "styles": [
+            "ethnic",
+            "bohemian"
+          ]
+        },
+        {
+          "name": "pink embroidered mini dress",
+          "category": "dresses",
+          "occasions": [
+            "party",
+            "date",
+            "casual"
+          ],
+          "styles": [
+            "romantic",
+            "ethnic"
+          ]
+        },
+        {
+          "name": "gold embroidered wooden sandals",
+          "category": "shoes",
+          "occasions": [
+            "ethnic",
+            "party",
+            "formal"
+          ],
+          "styles": [
+            "ethnic",
+            "classic"
+          ]
+        },
+        {
+          "name": "blue floral short top",
+          "category": "tops",
+          "occasions": [
+            "casual",
+            "outdoor",
+            "ethnic",
+            "lounge"
+          ],
+          "styles": [
+            "romantic",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "gold bangle with diamonds",
+          "category": "jewellery",
+          "occasions": [
+            "formal",
+            "ethnic",
+            "party"
+          ],
+          "styles": [
+            "classic",
+            "ethnic"
+          ]
+        },
+        {
+          "name": "multicolor clutch bag",
+          "category": "accessories",
+          "occasions": [
+            "party",
+            "formal",
+            "ethnic"
+          ],
+          "styles": [
+            "ethnic",
+            "classic"
+          ]
+        },
+        {
+          "name": "brown tiered maxi skirt",
+          "category": "bottoms",
+          "occasions": [
+            "casual",
+            "lounge",
+            "date"
+          ],
+          "styles": [
+            "bohemian",
+            "romantic"
+          ]
+        },
+        {
+          "name": "black pleated midi skirt",
+          "category": "bottoms",
+          "occasions": [
+            "work",
+            "formal",
+            "date"
+          ],
+          "styles": [
+            "classic",
+            "quiet-luxury"
+          ]
+        }
+      ]
+    },
+    {
+      "query": "party night out look",
+      "precision": 1.0,
+      "recall": 0.2273,
+      "mrr": 1.0,
+      "retrieved": [
+        {
+          "name": "burgundy satin corset top",
+          "category": "tops",
+          "occasions": [
+            "formal",
+            "party",
+            "date"
+          ],
+          "styles": [
+            "romantic",
+            "classic"
+          ]
+        },
+        {
+          "name": "brown leather pleated skirt",
+          "category": "bottoms",
+          "occasions": [
+            "casual",
+            "date",
+            "party"
+          ],
+          "styles": [
+            "edgy",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "pink ruffled midi skirt",
+          "category": "bottoms",
+          "occasions": [
+            "casual",
+            "date",
+            "party"
+          ],
+          "styles": [
+            "romantic",
+            "bohemian"
+          ]
+        },
+        {
+          "name": "pink embroidered mini dress",
+          "category": "dresses",
+          "occasions": [
+            "party",
+            "date",
+            "casual"
+          ],
+          "styles": [
+            "romantic",
+            "ethnic"
+          ]
+        },
+        {
+          "name": "navy ruffled mini dress",
+          "category": "dresses",
+          "occasions": [
+            "casual",
+            "date",
+            "party"
+          ],
+          "styles": [
+            "romantic",
+            "preppy"
+          ]
+        },
+        {
+          "name": "brown satin blouse",
+          "category": "tops",
+          "occasions": [
+            "date",
+            "party",
+            "work"
+          ],
+          "styles": [
+            "romantic",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "brown leather strappy heels",
+          "category": "shoes",
+          "occasions": [
+            "formal",
+            "party",
+            "date"
+          ],
+          "styles": [
+            "classic",
+            "quiet-luxury"
+          ]
+        },
+        {
+          "name": "black and white pleated top",
+          "category": "tops",
+          "occasions": [
+            "casual",
+            "date",
+            "party"
+          ],
+          "styles": [
+            "edgy",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "navy sparkly evening dress",
+          "category": "dresses",
+          "occasions": [
+            "formal",
+            "party",
+            "date"
+          ],
+          "styles": [
+            "romantic",
+            "classic"
+          ]
+        },
+        {
+          "name": "gold embroidered wooden sandals",
+          "category": "shoes",
+          "occasions": [
+            "ethnic",
+            "party",
+            "formal"
+          ],
+          "styles": [
+            "ethnic",
+            "classic"
+          ]
+        }
+      ]
+    },
+    {
+      "query": "something bohemian and flowy for outdoors",
+      "precision": 1.0,
+      "recall": 0.1299,
+      "mrr": 1.0,
+      "retrieved": [
+        {
+          "name": "multicolor cropped bell-sleeve top",
+          "category": "tops",
+          "occasions": [
+            "casual",
+            "ethnic",
+            "party"
+          ],
+          "styles": [
+            "bohemian",
+            "ethnic"
+          ]
+        },
+        {
+          "name": "brown tiered maxi skirt",
+          "category": "bottoms",
+          "occasions": [
+            "casual",
+            "lounge",
+            "date"
+          ],
+          "styles": [
+            "bohemian",
+            "romantic"
+          ]
+        },
+        {
+          "name": "colorful leather sandals",
+          "category": "shoes",
+          "occasions": [
+            "casual",
+            "ethnic",
+            "outdoor"
+          ],
+          "styles": [
+            "ethnic",
+            "bohemian"
+          ]
+        },
+        {
+          "name": "black embroidered tunic top",
+          "category": "tops",
+          "occasions": [
+            "ethnic",
+            "casual",
+            "lounge"
+          ],
+          "styles": [
+            "ethnic",
+            "bohemian"
+          ]
+        },
+        {
+          "name": "black and white pleated top",
+          "category": "tops",
+          "occasions": [
+            "casual",
+            "date",
+            "party"
+          ],
+          "styles": [
+            "edgy",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "yellow floral knit vest",
+          "category": "tops",
+          "occasions": [
+            "casual",
+            "lounge",
+            "date"
+          ],
+          "styles": [
+            "bohemian",
+            "cottagecore"
+          ]
+        },
+        {
+          "name": "pink ruffled midi skirt",
+          "category": "bottoms",
+          "occasions": [
+            "casual",
+            "date",
+            "party"
+          ],
+          "styles": [
+            "romantic",
+            "bohemian"
+          ]
+        },
+        {
+          "name": "blue and white gingham dress",
+          "category": "dresses",
+          "occasions": [
+            "casual",
+            "party",
+            "date"
+          ],
+          "styles": [
+            "classic",
+            "romantic"
+          ]
+        },
+        {
+          "name": "white embroidered blouse",
+          "category": "tops",
+          "occasions": [
+            "casual",
+            "lounge",
+            "date"
+          ],
+          "styles": [
+            "bohemian",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "pink floral clutch bag",
+          "category": "accessories",
+          "occasions": [
+            "casual",
+            "party",
+            "date"
+          ],
+          "styles": [
+            "romantic",
+            "bohemian"
+          ]
+        }
+      ]
+    },
+    {
+      "query": "shoes to wear with a casual outfit",
+      "precision": 1.0,
+      "recall": 0.7692,
+      "mrr": 1.0,
+      "retrieved": [
+        {
+          "name": "brown suede sneakers",
+          "category": "shoes",
+          "occasions": [
+            "casual",
+            "outdoor",
+            "lounge"
+          ],
+          "styles": [
+            "sporty",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "brown leather heeled shoes",
+          "category": "shoes",
+          "occasions": [
+            "work",
+            "formal",
+            "casual"
+          ],
+          "styles": [
+            "classic",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "beige leather sandals",
+          "category": "shoes",
+          "occasions": [
+            "casual",
+            "outdoor",
+            "lounge"
+          ],
+          "styles": [
+            "minimalist",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "burgundy velvet loafers",
+          "category": "shoes",
+          "occasions": [
+            "casual",
+            "work",
+            "date"
+          ],
+          "styles": [
+            "classic",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "black leather sandals",
+          "category": "shoes",
+          "occasions": [
+            "casual",
+            "outdoor",
+            "lounge"
+          ],
+          "styles": [
+            "classic",
+            "minimalist"
+          ]
+        },
+        {
+          "name": "gold metallic flat shoes",
+          "category": "shoes",
+          "occasions": [
+            "formal",
+            "party",
+            "date"
+          ],
+          "styles": [
+            "classic",
+            "quiet-luxury"
+          ]
+        },
+        {
+          "name": "cream leather ankle boots",
+          "category": "shoes",
+          "occasions": [
+            "formal",
+            "work",
+            "date"
+          ],
+          "styles": [
+            "classic",
+            "minimalist"
+          ]
+        },
+        {
+          "name": "colorful leather sandals",
+          "category": "shoes",
+          "occasions": [
+            "casual",
+            "ethnic",
+            "outdoor"
+          ],
+          "styles": [
+            "ethnic",
+            "bohemian"
+          ]
+        },
+        {
+          "name": "red gingham bow flats",
+          "category": "shoes",
+          "occasions": [
+            "casual",
+            "date",
+            "lounge"
+          ],
+          "styles": [
+            "classic",
+            "romantic"
+          ]
+        },
+        {
+          "name": "black leather knee-high boots",
+          "category": "shoes",
+          "occasions": [
+            "casual",
+            "formal",
+            "date"
+          ],
+          "styles": [
+            "classic",
+            "edgy"
+          ]
+        }
+      ]
+    },
+    {
+      "query": "a dress for a date night",
+      "precision": 0.8,
+      "recall": 0.3636,
+      "mrr": 1.0,
+      "retrieved": [
+        {
+          "name": "pink embroidered mini dress",
+          "category": "dresses",
+          "occasions": [
+            "party",
+            "date",
+            "casual"
+          ],
+          "styles": [
+            "romantic",
+            "ethnic"
+          ]
+        },
+        {
+          "name": "navy ruffled mini dress",
+          "category": "dresses",
+          "occasions": [
+            "casual",
+            "date",
+            "party"
+          ],
+          "styles": [
+            "romantic",
+            "preppy"
+          ]
+        },
+        {
+          "name": "blue and white gingham dress",
+          "category": "dresses",
+          "occasions": [
+            "casual",
+            "party",
+            "date"
+          ],
+          "styles": [
+            "classic",
+            "romantic"
+          ]
+        },
+        {
+          "name": "navy sparkly evening dress",
+          "category": "dresses",
+          "occasions": [
+            "formal",
+            "party",
+            "date"
+          ],
+          "styles": [
+            "romantic",
+            "classic"
+          ]
+        },
+        {
+          "name": "blue plaid A-line dress",
+          "category": "dresses",
+          "occasions": [
+            "casual",
+            "date",
+            "lounge"
+          ],
+          "styles": [
+            "classic",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "black tailored coat dress",
+          "category": "dresses",
+          "occasions": [
+            "work",
+            "formal",
+            "date"
+          ],
+          "styles": [
+            "classic",
+            "preppy"
+          ]
+        },
+        {
+          "name": "yellow floral fit-and-flare dress",
+          "category": "dresses",
+          "occasions": [
+            "casual",
+            "date",
+            "outdoor"
+          ],
+          "styles": [
+            "romantic",
+            "cottagecore"
+          ]
+        },
+        {
+          "name": "burgundy satin corset top",
+          "category": "tops",
+          "occasions": [
+            "formal",
+            "party",
+            "date"
+          ],
+          "styles": [
+            "romantic",
+            "classic"
+          ]
+        },
+        {
+          "name": "dark green short-sleeved dress",
+          "category": "dresses",
+          "occasions": [
+            "casual",
+            "outdoor",
+            "lounge"
+          ],
+          "styles": [
+            "classic",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "pink ruffled midi skirt",
+          "category": "bottoms",
+          "occasions": [
+            "casual",
+            "date",
+            "party"
+          ],
+          "styles": [
+            "romantic",
+            "bohemian"
+          ]
+        }
+      ]
+    },
+    {
+      "query": "warm cozy winter layers",
+      "precision": 0.9,
+      "recall": 0.1957,
+      "mrr": 1.0,
+      "retrieved": [
+        {
+          "name": "beige wool pea coat",
+          "category": "outerwear",
+          "occasions": [
+            "casual",
+            "work",
+            "formal"
+          ],
+          "styles": [
+            "classic",
+            "quiet-luxury"
+          ]
+        },
+        {
+          "name": "black cable knit sweater",
+          "category": "tops",
+          "occasions": [
+            "casual",
+            "lounge",
+            "date"
+          ],
+          "styles": [
+            "classic",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "black tailored coat dress",
+          "category": "dresses",
+          "occasions": [
+            "work",
+            "formal",
+            "date"
+          ],
+          "styles": [
+            "classic",
+            "preppy"
+          ]
+        },
+        {
+          "name": "teal quilted jacket",
+          "category": "outerwear",
+          "occasions": [
+            "casual",
+            "outdoor"
+          ],
+          "styles": [
+            "smart-casual",
+            "classic"
+          ]
+        },
+        {
+          "name": "pink heart fleece jacket",
+          "category": "outerwear",
+          "occasions": [
+            "casual",
+            "lounge",
+            "date"
+          ],
+          "styles": [
+            "streetwear",
+            "romantic"
+          ]
+        },
+        {
+          "name": "burgundy striped top",
+          "category": "tops",
+          "occasions": [
+            "casual",
+            "lounge"
+          ],
+          "styles": [
+            "classic",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "white strawberry knit cardigan",
+          "category": "tops",
+          "occasions": [
+            "casual",
+            "lounge",
+            "date"
+          ],
+          "styles": [
+            "cottagecore",
+            "romantic"
+          ]
+        },
+        {
+          "name": "cream Batman hoodie",
+          "category": "tops",
+          "occasions": [
+            "casual",
+            "lounge"
+          ],
+          "styles": [
+            "streetwear",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "light grey comfort sweater",
+          "category": "tops",
+          "occasions": [
+            "casual",
+            "lounge"
+          ],
+          "styles": [
+            "streetwear",
+            "smart-casual"
+          ]
+        },
+        {
+          "name": "brown satin blouse",
+          "category": "tops",
+          "occasions": [
+            "date",
+            "party",
+            "work"
+          ],
+          "styles": [
+            "romantic",
+            "smart-casual"
+          ]
+        }
+      ]
+    }
+  ]
+}

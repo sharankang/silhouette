@@ -33,6 +33,7 @@ class OutfitState(TypedDict):
     selected_items:     list[OutfitItem]
     missing_categories: list[str]
     retry_count:        int
+    recently_used_ids:  set
     explanation:        str
     outfit_result:      Optional[OutfitResult]
     error:              Optional[str]
@@ -51,10 +52,41 @@ CULTURAL_AESTHETIC_MAP = {
 }
 
 def _enrich_cultural_aesthetics(text: str) -> str:
+    # Fast path: known generic aesthetics
     lower = text.lower()
     for keyword, expansion in CULTURAL_AESTHETIC_MAP.items():
         if keyword in lower:
             return f"{text} (style context: {expansion})"
+
+    # LLM path: detect any named entity and extract its style aesthetic
+    try:
+        prompt = (
+            f"""Does this fashion request mention a specific artist, celebrity, event, brand, place, or cultural occasion?
+
+Request: "{text}"
+
+If YES, describe their FASHION aesthetic specifically — clothing style, silhouette, colors, vibe.
+Reply with ONLY a JSON object:
+{{"found": true, "entity": "name", "style_context": "specific fashion descriptors e.g. hyper-feminine coquette bows pastel girly romantic"}}
+
+If NO named entity is present, reply with ONLY:
+{{"found": false}}
+
+Do not explain. Return only the JSON."""
+        )
+        response = call_fast(prompt)
+        clean = response.strip()
+        for fence in ["```json", "```"]:
+            clean = clean.replace(fence, "")
+        clean = clean.strip()
+        start, end = clean.find("{"), clean.rfind("}") + 1
+        if start >= 0 and end > start:
+            data = json.loads(clean[start:end])
+            if data.get("found") and data.get("style_context"):
+                return f"{text} (style context: {data['style_context']})"
+    except Exception:
+        pass
+
     return text
 
 def parse_intent(state: OutfitState) -> OutfitState:
@@ -81,13 +113,14 @@ Example: {{"mood": "casual comfortable", "occasion": "casual", "season": "any", 
         parsed = json.loads(clean)
         return {
             **state,
+            "user_text": user_text,   # enriched text flows into retrieval
             "mood":     parsed.get("mood", user_text),
             "occasion": parsed.get("occasion", "any"),
             "season":   parsed.get("season", "any"),
         }
     except Exception as e:
         logger.warning(f"Intent parsing failed: {e}")
-        return {**state, "mood": user_text, "occasion": "any", "season": "any"}
+        return {**state, "user_text": user_text, "mood": user_text, "occasion": "any", "season": "any"}
 
 
 def expand_queries(state: OutfitState) -> OutfitState:
@@ -112,27 +145,61 @@ def retrieve_wardrobe(state: OutfitState) -> OutfitState:
     if not state.get("query_embedding"):
         return {**state, "candidate_items": []}
 
-    season_filter  = state["season"] if state["season"] != "any" else None
-    all_results    = []
-    queries_to_run = state.get("expanded_queries", [state["user_text"]])
+    season_filter     = state["season"] if state["season"] != "any" else None
+    query_emb         = state["query_embedding"]
+    queries           = state.get("expanded_queries", [state["user_text"]])[:3]
+    recently_used_ids = state.get("recently_used_ids") or set()
 
-    for query_text in queries_to_run[:3]:
+    seen: dict = {}
+
+    def _search(query_text, category=None, top_k=6):
         results = hybrid_search(
-            query_embedding=state["query_embedding"],
+            query_embedding=query_emb,
             query_text=query_text,
             season_filter=season_filter,
-            top_k=10,
+            category_filter=category,
+            top_k=top_k,
         )
-        all_results.extend(results)
+        for r in results:
+            if r.item.id not in seen or r.score > seen[r.item.id].score:
+                seen[r.item.id] = r
 
-    # deduplicate, keep highest score per item
-    seen = {}
-    for r in all_results:
-        if r.item.id not in seen or r.score > seen[r.item.id].score:
-            seen[r.item.id] = r
+    # broad search across all queries
+    for q in queries:
+        _search(q, top_k=8)
 
-    candidates = sorted(seen.values(), key=lambda x: x.score, reverse=True)
-    return {**state, "candidate_items": [r.item for r in candidates[:20]]}
+    # guaranteed per-category pools
+    for q in queries[:2]:
+        _search(q, category="tops",        top_k=5)
+        _search(q, category="bottoms",     top_k=5)
+        _search(q, category="shoes",       top_k=4)
+        _search(q, category="dresses",     top_k=3)
+        _search(q, category="outerwear",   top_k=3)
+        _search(q, category="accessories", top_k=2)
+
+    # variety penalty — push recently used items to the back within their category
+    fresh, recently_used = [], []
+    for r in sorted(seen.values(), key=lambda x: x.score, reverse=True):
+        if r.item.id in recently_used_ids:
+            recently_used.append(r)
+        else:
+            fresh.append(r)
+
+    candidates = fresh + recently_used  # fresh items first, recently used as fallback
+
+    # interleave by category so LLM sees diversity at top of list
+    by_cat: dict = {}
+    for r in candidates:
+        by_cat.setdefault(r.item.category, []).append(r.item)
+
+    priority   = ["tops", "bottoms", "shoes", "dresses", "outerwear", "accessories", "jewellery"]
+    interleaved = []
+    for i in range(5):
+        for cat in priority:
+            if cat in by_cat and i < len(by_cat[cat]):
+                interleaved.append(by_cat[cat][i])
+
+    return {**state, "candidate_items": interleaved[:30]}
 
 
 def retrieve_rules(state: OutfitState) -> OutfitState:
@@ -178,9 +245,17 @@ def build_outfit(state: OutfitState) -> OutfitState:
 
     candidates = list(state["candidate_items"])
 
-
-    if len(candidates) > 4:
-        random.shuffle(candidates[3:])
+    by_cat_shuffle: dict = {}
+    for item in candidates:
+        by_cat_shuffle.setdefault(item.category, []).append(item)
+    for cat in by_cat_shuffle:
+        random.shuffle(by_cat_shuffle[cat])
+    candidates = []
+    priority_order = ["tops", "bottoms", "shoes", "dresses", "outerwear", "accessories", "jewellery"]
+    for i in range(8):
+        for cat in priority_order:
+            if cat in by_cat_shuffle and i < len(by_cat_shuffle[cat]):
+                candidates.append(by_cat_shuffle[cat][i])
 
     # use indices instead of UUIDs
     def item_desc(idx, item) -> str:
@@ -213,19 +288,20 @@ AVAILABLE ITEMS (select by index number only):
 STYLE GUIDELINES:
 {rules_text if rules_text else "Apply general fashion principles."}
 
-MANDATORY SELECTION RULES — you MUST follow all of these:
-1. You MUST select items from the actual list above ONLY. Never reference items not in this list.
-2. You MUST select at least 2-3 items covering these categories:
-   - EITHER: one top/outerwear AND one bottom AND optionally shoes
-   - OR: one dress AND optionally shoes and/or outerwear
-3. NEVER select only one item. A single top or single dress alone is NOT a complete outfit.
-4. NEVER select two items from the same category.
-5. If no shoes are available, skip shoes — do not hallucinate them.
-6. Shoes should match the formality of the rest of the outfit.
-7. If picking a dress, do NOT also pick bottoms.
+MANDATORY RULES:
+1. You MUST select at least 2 items from different categories.
+2. A complete outfit requires BOTH a top/dress AND a bottom (unless it's a dress).
+3. Add shoes if available. Add outerwear if the occasion calls for it.
+4. NEVER select only 1 item. NEVER select two items from the same category.
+5. NEVER reference items not in the list above.
+6. If the request mentions a style context (e.g. feminine, romantic, ethnic, edgy), PRIORITIZE items whose style/occasion tags match that context — do NOT just pick the first available item per category.
+7. If picking a dress, skip bottoms.
+8. If accessories or jewellery are available and suit the style context (feminine, ethnic, formal, romantic), include them to complete the look.
 
-Reply with ONLY a JSON object, nothing else:
-{{"indices": [0, 2, 4], "reason": "one line explaining why these work together"}}"""
+Reply with ONLY valid JSON:
+{{"indices": [0, 2, 4, 7], "reason": "one sentence why these work together"}}
+
+Aim for 3-5 items. Always include top/dress + bottom + shoes as the base. Add accessories, jewellery, or outerwear when they genuinely complement the look."""
 
     try:
         response = call_smart(prompt)
@@ -246,6 +322,27 @@ Reply with ONLY a JSON object, nothing else:
             if isinstance(i, int) and 0 <= i < len(candidates)
         ]
 
+        by_cat: dict = {}
+        for item in candidates:
+            by_cat.setdefault(item.category, []).append(item)
+
+        selected_cats = {item.category for item in selected}
+
+        if not selected_cats & {"tops", "dresses", "outerwear"}:
+            for cat in ("tops", "dresses", "outerwear"):
+                if cat in by_cat:
+                    selected.append(_make_outfit_item(by_cat[cat][0]))
+                    selected_cats.add(cat)
+                    break
+
+        if "dresses" not in selected_cats and "bottoms" not in selected_cats:
+            if "bottoms" in by_cat:
+                selected.append(_make_outfit_item(by_cat["bottoms"][0]))
+                selected_cats.add("bottoms")
+
+        if "shoes" not in selected_cats and "shoes" in by_cat:
+            selected.append(_make_outfit_item(by_cat["shoes"][0]))
+
         if selected:
             return {**state, "selected_items": selected}
 
@@ -256,7 +353,6 @@ Reply with ONLY a JSON object, nothing else:
 
 
 def validate_outfit(state: OutfitState) -> OutfitState:
-    # one item per category
     seen_cats, deduped = set(), []
     for item in state["selected_items"]:
         if item.category not in seen_cats:
@@ -272,7 +368,6 @@ def validate_outfit(state: OutfitState) -> OutfitState:
     if "dresses" not in categories and "bottoms" not in categories:
         missing.append("bottoms")
 
-    # a dress is a complete outfit 
     if "dresses" in categories and "bottoms" in categories:
         state["selected_items"] = [i for i in state["selected_items"] if i.category != "bottoms"]
 
@@ -310,20 +405,24 @@ def generate_explanation(state: OutfitState) -> OutfitState:
         for item in state["selected_items"]
     )
 
+    item_count = len(state["selected_items"])
+
     prompt = f"""You are Silhouette, a personal AI stylist.
 
 The user asked for: "{state['user_text']}"
 
-You selected these EXACT items from their wardrobe:
+You selected EXACTLY {item_count} item(s) from their wardrobe:
 {items_list}
 
-Write a 2-3 sentence styling note describing this outfit.
-STRICT RULES:
-- Describe ONLY the items listed above. Do NOT invent or imagine other items.
-- Use the actual colors and categories listed — do not rename them.
-- If an item has no name, describe it by its color and category (e.g. "the olive bottoms", "the pink top").
-- Explain why these specific pieces work together and suit the user's request.
-- Be warm and direct. No generic filler phrases.
+Write a 2-3 sentence styling note about THIS outfit.
+
+ABSOLUTE RULES:
+- Describe ONLY the {item_count} items listed above. Every item you mention must be in this list.
+- DO NOT invent, suggest, or reference ANY item not in the list above.
+- DO NOT say "pair with" anything that is not in the list.
+- If only one item is listed, describe only that item and note the outfit is incomplete.
+- Use actual names/colors from the list. Do not rename items.
+- Be warm and specific. No generic filler.
 """
     return {**state, "explanation": call_smart(prompt)}
 
@@ -398,6 +497,7 @@ async def generate_outfit(
     audio_bias:           dict   = None,
     inspo_image_pil:      object = None,
     conversation_history: list   = None,
+    recently_used_ids:    set    = None,
 ) -> OutfitResult:
     graph = get_outfit_graph()
 
@@ -414,7 +514,7 @@ async def generate_outfit(
 
     initial_state = OutfitState(
         user_text=enriched_text,
-        original_user_text=user_text, 
+        original_user_text=user_text,
         audio_tone=audio_tone,
         audio_bias=audio_bias or {},
         inspo_image_pil=inspo_image_pil,
@@ -429,6 +529,7 @@ async def generate_outfit(
         selected_items=[],
         missing_categories=[],
         retry_count=0,
+        recently_used_ids=recently_used_ids or set(),
         explanation="",
         outfit_result=None,
         error=None,
@@ -436,3 +537,146 @@ async def generate_outfit(
 
     final_state = await graph.ainvoke(initial_state, config={"recursion_limit": 50})
     return final_state.get("outfit_result")
+
+
+CATEGORY_SIGNALS = {
+    "tops":        ["top", "shirt", "blouse", "tee", "t-shirt", "sweater", "hoodie", "tunic", "crop"],
+    "bottoms":     ["bottom", "pants", "jeans", "skirt", "shorts", "trousers"],
+    "shoes":       ["shoes", "shoe", "boots", "boot", "sneakers", "heels", "sandals", "footwear", "flats", "pumps", "loafers"],
+    "outerwear":   ["jacket", "coat", "blazer", "outerwear", "cardigan"],
+    "accessories": ["bag", "handbag", "purse", "accessory", "accessories", "scarf", "hat", "belt", "sunglasses"],
+    "jewellery":   ["jewellery", "jewelry", "necklace", "earrings", "bracelet", "ring", "bangle", "chain", "pendant"],
+    "dresses":     ["dress", "gown", "co-ord"],
+}
+
+VALID_CATEGORIES = set(CATEGORY_SIGNALS.keys())
+
+def _detect_outfit_edit_intent(text: str) -> dict:
+    lower = text.strip().lower()
+
+    all_edit_hints = [
+        "change", "swap", "replace", "different", "another", "other",
+        "don't like", "dont like", "hate", "not the", "switch",
+        "add", "include", "throw on", "with some", "also",
+        "only", "keep", "just the", "love the", "like the",
+    ]
+    if not any(h in lower for h in all_edit_hints):
+        return {"action": "none", "category": None}
+
+    cat_str = ", ".join(VALID_CATEGORIES)
+    prompt = (
+        f"""You are analyzing a user message about their outfit. Determine their intent.
+
+User message: "{text}"
+
+Possible actions:
+- swap: replace one specific clothing category (e.g. change shoes, different bag, another top)
+- add: add a new item category to the existing outfit (e.g. add jewelry, add a scarf)
+- keep_only: keep only one specific item, replace everything else (e.g. I only like the dress)
+- none: no outfit editing intent
+
+Valid categories: {cat_str}
+
+Respond with JSON only, no explanation:
+{{"action": "swap"|"add"|"keep_only"|"none", "category": "<category or null>"}}"""
+    )
+    try:
+        raw = call_fast(prompt).strip()
+        raw = raw.replace("", "").strip()
+        result = json.loads(raw)
+        action = result.get("action", "none")
+        category = result.get("category")
+        if category not in VALID_CATEGORIES:
+            category = None
+        return {"action": action, "category": category}
+    except Exception as e:
+        logger.warning(f"Intent detection LLM failed: {e}, falling back to keywords")
+        for cat, kws in CATEGORY_SIGNALS.items():
+            if any(kw in lower for kw in kws):
+                swap_words = ["change", "different", "another", "other", "swap", "replace", "don't like", "hate"]
+                add_words = ["add", "include", "throw on", "also want"]
+                keep_words = ["only", "keep", "just the"]
+                if any(w in lower for w in swap_words):
+                    return {"action": "swap", "category": cat}
+                if any(w in lower for w in add_words):
+                    return {"action": "add", "category": cat}
+                if any(w in lower for w in keep_words):
+                    return {"action": "keep_only", "category": cat}
+        return {"action": "none", "category": None}
+
+
+def detect_swap_intent(text: str) -> Optional[str]:
+    result = _detect_outfit_edit_intent(text)
+    return result["category"] if result["action"] == "swap" else None
+
+
+def detect_keep_intent(text: str) -> Optional[str]:
+    result = _detect_outfit_edit_intent(text)
+    return result["category"] if result["action"] == "keep_only" else None
+
+
+def detect_add_intent(text: str) -> Optional[str]:
+    result = _detect_outfit_edit_intent(text)
+    return result["category"] if result["action"] == "add" else None
+
+
+async def swap_outfit_item(
+    current_items: list[dict],
+    reject_category: list[str],
+    style_context: str,
+    rejected_ids: Optional[set] = None,
+) -> OutfitResult:
+    """Keep current outfit items except rejected categories, find replacements."""
+
+    if isinstance(reject_category, str):
+        reject_category = [reject_category]
+
+    kept = [OutfitItem(**i) if isinstance(i, dict) else i
+            for i in current_items if i.get("category") not in reject_category]
+
+    exclude_ids = {i.id for i in kept}
+    if rejected_ids:
+        exclude_ids.update(rejected_ids)
+    for i in current_items:
+        item = i if isinstance(i, dict) else i.__dict__
+        if item.get("category") in reject_category:
+            exclude_ids.add(item.get("id", ""))
+
+    new_items = list(kept)
+
+    for cat in reject_category:
+        query = f"{style_context} {cat}"
+        query_emb = embed_text(query)
+        results = hybrid_search(
+            query_embedding=query_emb,
+            query_text=query,
+            category_filter=cat,
+            top_k=15,
+        )
+        added = False
+        for r in results:
+            if r.item.id not in exclude_ids:
+                new_items.append(_make_outfit_item(r.item))
+                exclude_ids.add(r.item.id)
+                added = True
+                break
+        if not added:
+            logger.warning(f"No alternative found for category {cat} — keeping original")
+
+    items_list = "\n".join(f"- {i.name or i.category} ({i.category})" for i in new_items)
+    explanation_prompt = f"""You are Silhouette, a personal AI stylist.
+
+The user updated their outfit. Here are the final {len(new_items)} items:
+{items_list}
+
+Write a warm 2-sentence styling note about this updated look. Mention only these items."""
+
+    explanation = call_smart(explanation_prompt)
+
+    return OutfitResult(
+        id=str(uuid.uuid4()),
+        items=new_items,
+        explanation=explanation,
+        query_text=style_context,
+        created_at=datetime.utcnow().isoformat(),
+    )

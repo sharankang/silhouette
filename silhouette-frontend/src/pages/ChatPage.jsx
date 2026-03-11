@@ -58,9 +58,9 @@ export default function ChatPage() {
       if (image) formData.append('image', image)
 
       const recentHistory = messages
-        .filter(m => !m.loading && (m.role === 'user' || m.role === 'assistant') && m.text)
+        .filter(m => !m.loading && (m.role === 'user' || m.role === 'assistant') && (m.text || m.outfit))
         .slice(-6)
-        .map(m => ({ role: m.role, text: m.text }))
+        .map(m => ({ role: m.role, text: m.text, outfit: m.outfit || null }))
       if (recentHistory.length > 0) {
         formData.append('history', JSON.stringify(recentHistory))
       }
